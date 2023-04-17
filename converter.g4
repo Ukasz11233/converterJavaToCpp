@@ -9,7 +9,7 @@ classBody : '{' classBodyDeclaration* '}';
 
 // Deklaracje zmiennych
 classBodyDeclaration : fieldDeclaration | methodDeclaration;
-fieldDeclaration : (accessModifier)? type Identifier ';';
+fieldDeclaration : (accessModifier)? statement;
 accessModifier : 'public' | 'private' | 'protected';
 
 // Deklaracje metod
