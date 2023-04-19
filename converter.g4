@@ -1,7 +1,7 @@
 grammar converter;
 
 // Pliki programu
-compilationUnit : classDeclaration EOF;
+startCompilation : classDeclaration+ EOF;
 
 // Deklaracje klasy
 classDeclaration : 'class' Identifier classBody;
