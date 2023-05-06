@@ -13,7 +13,7 @@ fieldDeclaration : (accessModifier)? statement;
 accessModifier : 'public' | 'private' | 'protected';
 
 // Deklaracje metod
-methodDeclaration : (accessModifier)? ('static')? type Identifier '(' (formalParameter (',' formalParameter)*)? ')' methodBody;
+methodDeclaration : (accessModifier)? ('static')? (type | 'void' ) Identifier '(' (formalParameter (',' formalParameter)*)? ')' methodBody;
 formalParameter : type Identifier;
 methodBody : '{' statement* ('return' expression ';')? '}';
 
