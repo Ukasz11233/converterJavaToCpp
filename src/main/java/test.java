@@ -1,11 +1,11 @@
 class test
 {
-    private int tmp = 4;
-    private float tmp2 = 12.1f;
-    public String someText = "someText";
-    protected boolean myPain = false;
-    public static void Main(String[] args)
+    public float k = 5.4f;
+    public static void test(float k, String tmp)
     {
-        int test = 5;
+        int s = 5;
+        float r = 21;
     }
+    private int m = 12;
+    public static float sgtdd;
 }

@@ -9,7 +9,7 @@ classBody : '{' classBodyDeclaration* '}';
 
 // Deklaracje zmiennych
 classBodyDeclaration : fieldDeclaration | methodDeclaration;
-fieldDeclaration : (accessModifier)? statement;
+fieldDeclaration : (accessModifier)? 'static'? statement;
 accessModifier : 'public' | 'private' | 'protected';
 
 // Deklaracje metod
@@ -30,6 +30,7 @@ whileStatement : 'while' '(' expression ')' statement;
 forStatement : 'for' '(' forControl ')' statement;
 forControl : (forInit)? ';' expression? ';' expressionList?;
 forInit : localVariableDeclarationStatement | expressionList;
+
 localVariableDeclarationStatement : type variableDeclarators ';';
 variableDeclarators : variableDeclarator (',' variableDeclarator)*;
 variableDeclarator : Identifier arrayType? ('=' expression | arrayInitializer)?;
@@ -47,7 +48,7 @@ literal : IntegerLiteral | FloatingPointLiteral | BooleanLiteral | CharacterLite
 
 // Tokeny
 IntegerLiteral : ('0' | [1-9][0-9]*);
-FloatingPointLiteral : [0-9]* '.' [0-9]+;
+FloatingPointLiteral : [0-9]* '.' [0-9]+'f'?;
 BooleanLiteral : 'true' | 'false';
 CharacterLiteral : '\'' ( EscapeSequence | ~['\\] ) '\'';
 StringLiteral : '"' ( EscapeSequence | ~["\\] )* '"';

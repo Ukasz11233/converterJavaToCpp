@@ -1,5 +1,6 @@
 import org.antlr.v4.runtime.ParserRuleContext;
 
+import java.awt.image.AreaAveragingScaleFilter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -9,8 +10,10 @@ import java.util.Map;
 
 class MyConverter extends converterBaseListener {
     private PrintWriter file;
+
     private Map<String, Integer> accessIndex;
     private ArrayList<String> privateFields;
+    private ArrayList<String> formalParameters;
 
     private ArrayList<String> publicFields;
     private ArrayList<String> protectedFields;
@@ -25,6 +28,7 @@ class MyConverter extends converterBaseListener {
         privateFields = new ArrayList<String>();
         publicFields = new ArrayList<String>();
         protectedFields = new ArrayList<String>();
+        formalParameters = new ArrayList<String>();
     }
     protected void close()
     {
@@ -106,14 +110,101 @@ class MyConverter extends converterBaseListener {
     }
 
     @Override
-    public void enterMethodDeclaration(converterParser.MethodDeclarationContext ctx) {
-        currentField = ctx.accessModifier().getText();
-    }
-
-    @Override
     public void exitFieldDeclaration(converterParser.FieldDeclarationContext ctx) {
         int value = accessIndex.get(currentField);
         accessIndex.put(currentField, ++value);
+    }
+
+    private String getMethodType(String ctx)
+    {
+        String result = "";
+        if (ctx.contains("void")) {
+            result = "void";
+        } else if (ctx.contains("int")) {
+            result = "int";
+        } else if (ctx.contains("float")) {
+            result = "float";
+        }
+        else if(ctx.contains("boolean")) {
+            result = "bool";
+        } else if (ctx.contains("String")) {
+            result = "string";
+        }
+        return result;
+    }
+    @Override
+    public void enterMethodDeclaration(converterParser.MethodDeclarationContext ctx) {
+        currentField = ctx.accessModifier().getText();
+        System.out.println(ctx.getText());
+        if(currentField.equals("private")) {
+            privateFields.add("");
+        }
+        else if(currentField.equals("public"))
+        {
+            publicFields.add("");
+        }
+        else if(currentField.equals("protected"))
+        {
+            protectedFields.add("");
+        }
+        int currentIndex = accessIndex.get(currentField);
+        String originalString = getOriginalString(currentIndex);
+        if(ctx.getText().contains("static"))
+        {
+            originalString += "static ";
+        }
+        originalString += getMethodType(ctx.getText()) + " ";
+        originalString += ctx.Identifier().toString();
+        modifyFiled(currentIndex, originalString);
+    }
+
+    @Override
+    public void enterFormalParameter(converterParser.FormalParameterContext ctx) {
+        int currentIndex = accessIndex.get(currentField);
+        String originalString = getOriginalString(currentIndex);
+        System.out.println("enterFOrmal " + originalString);
+        if(originalString.contains(")"))
+        {
+            System.out.println("katarina");
+            originalString = originalString.replace(")", ", ");
+            System.out.println("shaco " + originalString);
+        }
+        else
+        {
+            originalString += "(";
+        }
+        modifyFiled(currentIndex, originalString);
+    }
+
+    @Override
+    public void exitFormalParameter(converterParser.FormalParameterContext ctx) {
+        int currentIndex = accessIndex.get(currentField);
+        String originalString = getOriginalString(currentIndex);
+        originalString += ctx.Identifier().toString() + ")";
+        modifyFiled(currentIndex, originalString);
+    }
+
+    @Override
+    public void exitMethodDeclaration(converterParser.MethodDeclarationContext ctx) {
+        int value = accessIndex.get(currentField);
+        accessIndex.put(currentField, ++value);
+    }
+
+    @Override
+    public void enterMethodBody(converterParser.MethodBodyContext ctx) {
+        int currentIndex = accessIndex.get(currentField);
+        String originalString = getOriginalString(currentIndex);
+        originalString += "{\n\t";
+        modifyFiled(currentIndex, originalString);
+
+    }
+
+    @Override
+    public void exitMethodBody(converterParser.MethodBodyContext ctx) {
+        int currentIndex = accessIndex.get(currentField);
+        String originalString = getOriginalString(currentIndex);
+        originalString += "}";
+        modifyFiled(currentIndex, originalString);
     }
 
     @Override
@@ -174,7 +265,7 @@ class MyConverter extends converterBaseListener {
     public void exitLocalVariableDeclarationStatement(converterParser.LocalVariableDeclarationStatementContext ctx) {
         int currentIndex = accessIndex.get(currentField);
         String originalString = getOriginalString(currentIndex);
-        originalString += ";";
+        originalString += ";\n\t";
         modifyFiled(currentIndex, originalString);
     }
 }
