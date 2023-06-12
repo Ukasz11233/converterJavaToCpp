@@ -230,8 +230,8 @@ class MyConverter extends converterBaseListener {
             originalString += "return " + ctx.expression().getText() + ";\n\t";
         }
         originalString += "}";
-        System.out.println("############## " + ctx.expression().getText());
-        System.out.println("############## " + ctx.getText());
+        //System.out.println("############## " + ctx.expression().getText());
+        //System.out.println("############## " + ctx.getText());
         modifyFiled(currentIndex, originalString);
     }
 
@@ -362,5 +362,24 @@ class MyConverter extends converterBaseListener {
         } else {
             modifyFiled(currentIndex, originalString);
         }
+    }
+
+    @Override
+    public void enterWhileStatement(converterParser.WhileStatementContext ctx) {
+        methodBodyStatement += "while (" + ctx.expression().getText() + ")";
+    }
+
+    @Override
+    public void enterForStatement(converterParser.ForStatementContext ctx){
+        methodBodyStatement += "for";
+    }
+
+    @Override
+    public void enterForControl(converterParser.ForControlContext ctx){
+        methodBodyStatement += "(";
+
+    }
+    public void exitForControl(converterParser.ForControlContext ctx){
+        methodBodyStatement += ctx.expression().getText() +";"+ ctx.expressionList().getText()+")";
     }
 }
