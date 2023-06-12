@@ -1,11 +1,12 @@
 class test
 {
     public float k = 5.4f;
-    public static void test(float k, String tmp)
+    public static String test(float k, String tmp, int s)
     {
-        int s = 5;
-        float r = 21;
+        s = 5;
+        int fds = 2;
+        tmp = "siema";
+        return tmp;
     }
     private int m = 12;
-    public static float sgtdd;
 }

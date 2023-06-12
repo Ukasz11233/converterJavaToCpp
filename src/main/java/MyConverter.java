@@ -17,7 +17,9 @@ class MyConverter extends converterBaseListener {
 
     private ArrayList<String> publicFields;
     private ArrayList<String> protectedFields;
+    String methodBodyStatement;
     private String currentField;
+    private Boolean isLocalVariableDeclarationInMethod;
     public MyConverter(String outputFilePath) throws IOException
     {
         file = new PrintWriter(new FileWriter(outputFilePath));
@@ -29,6 +31,7 @@ class MyConverter extends converterBaseListener {
         publicFields = new ArrayList<String>();
         protectedFields = new ArrayList<String>();
         formalParameters = new ArrayList<String>();
+        isLocalVariableDeclarationInMethod = false;
     }
     protected void close()
     {
@@ -134,6 +137,7 @@ class MyConverter extends converterBaseListener {
     }
     @Override
     public void enterMethodDeclaration(converterParser.MethodDeclarationContext ctx) {
+
         currentField = ctx.accessModifier().getText();
         System.out.println(ctx.getText());
         if(currentField.equals("private")) {
@@ -162,12 +166,11 @@ class MyConverter extends converterBaseListener {
     public void enterFormalParameter(converterParser.FormalParameterContext ctx) {
         int currentIndex = accessIndex.get(currentField);
         String originalString = getOriginalString(currentIndex);
-        System.out.println("enterFOrmal " + originalString);
+        System.out.println("enterFormal " + originalString);
         if(originalString.contains(")"))
         {
-            System.out.println("katarina");
             originalString = originalString.replace(")", ", ");
-            System.out.println("shaco " + originalString);
+            System.out.println("xXXXXXXXXXXXXXX " + originalString);
         }
         else
         {
@@ -192,9 +195,11 @@ class MyConverter extends converterBaseListener {
 
     @Override
     public void enterMethodBody(converterParser.MethodBodyContext ctx) {
+        methodBodyStatement = "";
+        isLocalVariableDeclarationInMethod = true;
         int currentIndex = accessIndex.get(currentField);
         String originalString = getOriginalString(currentIndex);
-        originalString += "{\n\t";
+        methodBodyStatement += "{\n\t";
         modifyFiled(currentIndex, originalString);
 
     }
@@ -203,8 +208,9 @@ class MyConverter extends converterBaseListener {
     public void exitMethodBody(converterParser.MethodBodyContext ctx) {
         int currentIndex = accessIndex.get(currentField);
         String originalString = getOriginalString(currentIndex);
-        originalString += "}";
+        originalString += methodBodyStatement + "}";
         modifyFiled(currentIndex, originalString);
+        isLocalVariableDeclarationInMethod = false;
     }
 
     @Override
@@ -234,15 +240,27 @@ class MyConverter extends converterBaseListener {
         {
             originalString += ctx.getText().toLowerCase() + " ";
         }
-        modifyFiled(currentIndex, originalString);
+        if (!isLocalVariableDeclarationInMethod) {
+            modifyFiled(currentIndex, originalString);
+        }
     }
 
+    @Override
+    public void enterLocalVariableDeclarationStatement(converterParser.LocalVariableDeclarationStatementContext ctx) {
+        if(isLocalVariableDeclarationInMethod) {
+            methodBodyStatement += ctx.type().getText() + " ";
+        }
+    }
     @Override
     public void enterVariableDeclarator(converterParser.VariableDeclaratorContext ctx) {
         int currentIndex = accessIndex.get(currentField);
         String originalString = getOriginalString(currentIndex);
-        originalString += ctx.Identifier().toString();
-        modifyFiled(currentIndex, originalString);
+        if (isLocalVariableDeclarationInMethod) {
+            methodBodyStatement += ctx.getText() + ";\n\t";
+        } else {
+            originalString += ctx.Identifier().toString();
+            modifyFiled(currentIndex, originalString);
+        }
     }
 
     @Override
@@ -250,7 +268,11 @@ class MyConverter extends converterBaseListener {
         int currentIndex = accessIndex.get(currentField);
         String originalString = getOriginalString(currentIndex);
         originalString += "=";
-        modifyFiled(currentIndex, originalString);
+        if (isLocalVariableDeclarationInMethod) {
+                ;
+        } else {
+            modifyFiled(currentIndex, originalString);
+        }
     }
 
     @Override
@@ -258,7 +280,11 @@ class MyConverter extends converterBaseListener {
         int currentIndex = accessIndex.get(currentField);
         String originalString = getOriginalString(currentIndex);
         originalString += ctx.getText();
-        modifyFiled(currentIndex, originalString);
+        if (isLocalVariableDeclarationInMethod) {
+            ;
+        } else {
+            modifyFiled(currentIndex, originalString);
+        }
     }
 
     @Override
@@ -266,6 +292,15 @@ class MyConverter extends converterBaseListener {
         int currentIndex = accessIndex.get(currentField);
         String originalString = getOriginalString(currentIndex);
         originalString += ";\n\t";
-        modifyFiled(currentIndex, originalString);
+        if (isLocalVariableDeclarationInMethod) {
+                ;
+        } else {
+            modifyFiled(currentIndex, originalString);
+        }
+    }
+
+    @Override
+    public void enterExpressionStatement(converterParser.ExpressionStatementContext ctx) {
+        methodBodyStatement += ctx.getText() + "\n\t";
     }
 }
