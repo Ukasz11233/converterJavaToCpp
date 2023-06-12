@@ -20,6 +20,8 @@ class MyConverter extends converterBaseListener {
     String methodBodyStatement;
     private String currentField;
     private Boolean isLocalVariableDeclarationInMethod;
+    private Boolean isInFormalParameter;
+    private Boolean doesFieldDeclarationContainStatic;
     public MyConverter(String outputFilePath) throws IOException
     {
         file = new PrintWriter(new FileWriter(outputFilePath));
@@ -32,6 +34,8 @@ class MyConverter extends converterBaseListener {
         protectedFields = new ArrayList<String>();
         formalParameters = new ArrayList<String>();
         isLocalVariableDeclarationInMethod = false;
+        isInFormalParameter = false;
+        doesFieldDeclarationContainStatic = false;
     }
     protected void close()
     {
@@ -110,12 +114,17 @@ class MyConverter extends converterBaseListener {
     @Override
     public void enterFieldDeclaration(converterParser.FieldDeclarationContext ctx) {
         currentField = ctx.accessModifier().getText();
+        if(ctx.getText().contains("static"))
+        {
+            doesFieldDeclarationContainStatic = true;
+        }
     }
 
     @Override
     public void exitFieldDeclaration(converterParser.FieldDeclarationContext ctx) {
         int value = accessIndex.get(currentField);
         accessIndex.put(currentField, ++value);
+        doesFieldDeclarationContainStatic = false;
     }
 
     private String getMethodType(String ctx)
@@ -137,7 +146,7 @@ class MyConverter extends converterBaseListener {
     }
     @Override
     public void enterMethodDeclaration(converterParser.MethodDeclarationContext ctx) {
-
+        isLocalVariableDeclarationInMethod = true;
         currentField = ctx.accessModifier().getText();
         System.out.println(ctx.getText());
         if(currentField.equals("private")) {
@@ -158,23 +167,27 @@ class MyConverter extends converterBaseListener {
             originalString += "static ";
         }
         originalString += getMethodType(ctx.getText()) + " ";
-        originalString += ctx.Identifier().toString();
+        originalString += ctx.Identifier().toString() + "(";
+        System.out.println("shacoofdsfds  " + originalString);
         modifyFiled(currentIndex, originalString);
     }
 
     @Override
     public void enterFormalParameter(converterParser.FormalParameterContext ctx) {
+        isInFormalParameter = true;
         int currentIndex = accessIndex.get(currentField);
         String originalString = getOriginalString(currentIndex);
         System.out.println("enterFormal " + originalString);
-        if(originalString.contains(")"))
+        if(! originalString.contains(")") && !(Character.compare(originalString.charAt(originalString.length()-1), '(') == 0))
         {
-            originalString = originalString.replace(")", ", ");
+            originalString  += ", ";
             System.out.println("xXXXXXXXXXXXXXX " + originalString);
+            System.out.println("xXXXXXXXXXXXXXX " + originalString.charAt(originalString.length()-1));
+
         }
         else
         {
-            originalString += "(";
+//            originalString += "(";
         }
         modifyFiled(currentIndex, originalString);
     }
@@ -183,22 +196,25 @@ class MyConverter extends converterBaseListener {
     public void exitFormalParameter(converterParser.FormalParameterContext ctx) {
         int currentIndex = accessIndex.get(currentField);
         String originalString = getOriginalString(currentIndex);
-        originalString += ctx.Identifier().toString() + ")";
+        originalString += ctx.Identifier().toString();
         modifyFiled(currentIndex, originalString);
+        isInFormalParameter = false;
     }
 
     @Override
     public void exitMethodDeclaration(converterParser.MethodDeclarationContext ctx) {
         int value = accessIndex.get(currentField);
         accessIndex.put(currentField, ++value);
+        isLocalVariableDeclarationInMethod = false;
     }
 
     @Override
     public void enterMethodBody(converterParser.MethodBodyContext ctx) {
         methodBodyStatement = "";
-        isLocalVariableDeclarationInMethod = true;
+
         int currentIndex = accessIndex.get(currentField);
         String originalString = getOriginalString(currentIndex);
+        originalString += ")";
         methodBodyStatement += "{\n\t";
         modifyFiled(currentIndex, originalString);
 
@@ -208,9 +224,15 @@ class MyConverter extends converterBaseListener {
     public void exitMethodBody(converterParser.MethodBodyContext ctx) {
         int currentIndex = accessIndex.get(currentField);
         String originalString = getOriginalString(currentIndex);
-        originalString += methodBodyStatement + "}";
+        originalString += methodBodyStatement;
+        if(ctx.getText().contains("return"))
+        {
+            originalString += "return " + ctx.expression().getText() + ";\n\t";
+        }
+        originalString += "}";
+        System.out.println("############## " + ctx.expression().getText());
+        System.out.println("############## " + ctx.getText());
         modifyFiled(currentIndex, originalString);
-        isLocalVariableDeclarationInMethod = false;
     }
 
     @Override
@@ -232,6 +254,9 @@ class MyConverter extends converterBaseListener {
     public void enterType(converterParser.TypeContext ctx) {
         int currentIndex = accessIndex.get(currentField);
         String originalString = getOriginalString(currentIndex);
+        if (doesFieldDeclarationContainStatic) {
+            originalString += "static ";
+        }
         if(ctx.getText().equals("boolean"))
         {
             originalString += "bool ";
@@ -240,7 +265,7 @@ class MyConverter extends converterBaseListener {
         {
             originalString += ctx.getText().toLowerCase() + " ";
         }
-        if (!isLocalVariableDeclarationInMethod) {
+        if (!isLocalVariableDeclarationInMethod || isInFormalParameter) {
             modifyFiled(currentIndex, originalString);
         }
     }

@@ -1,12 +1,12 @@
 class test
 {
-    public float k = 5.4f;
-    public static String test(float k, String tmp, int s)
+    public static String test(int k, int m, String cos)
     {
-        s = 5;
-        int fds = 2;
-        tmp = "siema";
+        String tmp = "cos";
+        tmp = tmp + "cos";
         return tmp;
     }
-    private int m = 12;
+
+    public float wraz;
+    private static int staz;
 }
