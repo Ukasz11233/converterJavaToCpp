@@ -327,5 +327,40 @@ class MyConverter extends converterBaseListener {
     @Override
     public void enterExpressionStatement(converterParser.ExpressionStatementContext ctx) {
         methodBodyStatement += ctx.getText() + "\n\t";
+
+    }
+
+    @Override public void enterIfStatement(converterParser.IfStatementContext ctx){
+        int currentIndex = accessIndex.get(currentField);
+        String originalString = getOriginalString(currentIndex);
+        String exp = ctx.expression().getText();
+        if (isLocalVariableDeclarationInMethod) {
+            methodBodyStatement += "if (" + exp +")";
+        } else {
+            originalString += "if (";
+            modifyFiled(currentIndex, originalString);
+        }
+    }
+
+    @Override public void enterBlock(converterParser.BlockContext ctx) {
+        int currentIndex = accessIndex.get(currentField);
+        String originalString = getOriginalString(currentIndex);
+        originalString += "{\n\t";
+        if (isLocalVariableDeclarationInMethod) {
+            methodBodyStatement += "{\n\t";
+        } else {
+            modifyFiled(currentIndex, originalString);
+        }
+    }
+
+    @Override public void exitBlock(converterParser.BlockContext ctx) {
+        int currentIndex = accessIndex.get(currentField);
+        String originalString = getOriginalString(currentIndex);
+        originalString += "}";
+        if (isLocalVariableDeclarationInMethod) {
+            methodBodyStatement += "}";
+        } else {
+            modifyFiled(currentIndex, originalString);
+        }
     }
 }
