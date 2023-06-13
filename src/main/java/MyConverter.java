@@ -1,6 +1,7 @@
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import java.awt.image.AreaAveragingScaleFilter;
+import java.beans.Expression;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -18,11 +19,13 @@ class MyConverter extends converterBaseListener {
     private ArrayList<String> publicFields;
     private ArrayList<String> protectedFields;
     String methodBodyStatement;
+    String arrayInitBody;
     private String currentField;
     private Boolean isLocalVariableDeclarationInMethod;
     private Boolean isInFormalParameter;
     private Boolean doesFieldDeclarationContainStatic;
     private Boolean isInForInit;
+    private Boolean isInArrayInit = false;
     public MyConverter(String outputFilePath) throws IOException
     {
         file = new PrintWriter(new FileWriter(outputFilePath));
@@ -297,11 +300,22 @@ class MyConverter extends converterBaseListener {
     public void enterExpression(converterParser.ExpressionContext ctx) {
         int currentIndex = accessIndex.get(currentField);
         String originalString = getOriginalString(currentIndex);
-        originalString += "=";
+
         if (isLocalVariableDeclarationInMethod) {
                 ;
+
+        } else if(isInArrayInit){
+            ;
         } else {
+            originalString += "=";
             modifyFiled(currentIndex, originalString);
+        }
+    }
+    @Override
+    public void exitExpression(converterParser.ExpressionContext ctx) {
+
+        if(isInArrayInit){
+            arrayInitBody += ",";
         }
     }
 
@@ -312,6 +326,8 @@ class MyConverter extends converterBaseListener {
         originalString += ctx.getText();
         if (isLocalVariableDeclarationInMethod) {
             ;
+        }else if(isInArrayInit){
+            arrayInitBody += ctx.getText();
         } else {
             modifyFiled(currentIndex, originalString);
         }
@@ -404,7 +420,7 @@ class MyConverter extends converterBaseListener {
     public void enterArrayType(converterParser.ArrayTypeContext ctx) {
         int currentIndex = accessIndex.get(currentField);
         String originalString = getOriginalString(currentIndex);
-        originalString += "[";
+        originalString += "";
         modifyFiled(currentIndex, originalString);
     }
 
@@ -412,23 +428,24 @@ class MyConverter extends converterBaseListener {
     public void exitArrayType(converterParser.ArrayTypeContext ctx) {
         int currentIndex = accessIndex.get(currentField);
         String originalString = getOriginalString(currentIndex);
-        originalString += "]";
+        originalString += "";
         modifyFiled(currentIndex, originalString);
     }
 
     @Override
     public void enterArrayInitializer(converterParser.ArrayInitializerContext ctx) {
-        int currentIndex = accessIndex.get(currentField);
-        String originalString = getOriginalString(currentIndex);
-        originalString += "{";
-        modifyFiled(currentIndex, originalString);
+        isInArrayInit = true;
+        arrayInitBody = "";
+
+        arrayInitBody += "={";
     }
 
     @Override
     public void exitArrayInitializer(converterParser.ArrayInitializerContext ctx) {
+        isInArrayInit = false;
         int currentIndex = accessIndex.get(currentField);
         String originalString = getOriginalString(currentIndex);
-        originalString += "}";
+        originalString += arrayInitBody.substring(0, arrayInitBody.length()-1) + "}";
         modifyFiled(currentIndex, originalString);
     }
 }
