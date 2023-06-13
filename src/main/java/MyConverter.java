@@ -394,8 +394,41 @@ class MyConverter extends converterBaseListener {
         methodBodyStatement += "(";
 
     }
+    @Override
     public void exitForControl(converterParser.ForControlContext ctx){
         methodBodyStatement += ctx.expression().getText() +";"+ ctx.expressionList().getText()+")";
         isInForInit = false;
+    }
+
+    @Override
+    public void enterArrayType(converterParser.ArrayTypeContext ctx) {
+        int currentIndex = accessIndex.get(currentField);
+        String originalString = getOriginalString(currentIndex);
+        originalString += "[";
+        modifyFiled(currentIndex, originalString);
+    }
+
+    @Override
+    public void exitArrayType(converterParser.ArrayTypeContext ctx) {
+        int currentIndex = accessIndex.get(currentField);
+        String originalString = getOriginalString(currentIndex);
+        originalString += "]";
+        modifyFiled(currentIndex, originalString);
+    }
+
+    @Override
+    public void enterArrayInitializer(converterParser.ArrayInitializerContext ctx) {
+        int currentIndex = accessIndex.get(currentField);
+        String originalString = getOriginalString(currentIndex);
+        originalString += "{";
+        modifyFiled(currentIndex, originalString);
+    }
+
+    @Override
+    public void exitArrayInitializer(converterParser.ArrayInitializerContext ctx) {
+        int currentIndex = accessIndex.get(currentField);
+        String originalString = getOriginalString(currentIndex);
+        originalString += "}";
+        modifyFiled(currentIndex, originalString);
     }
 }
