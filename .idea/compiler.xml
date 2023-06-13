@@ -6,11 +6,11 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="javaToCpp" />
+        <module name="gen" />
+        <module name="core" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="gen" target="11" />
       <module name="src" target="11" />
     </bytecodeTargetLevel>
   </component>

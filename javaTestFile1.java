@@ -1,5 +1,4 @@
-class test
-{
+public class javaTestFile1 {
     public static String test(int k, int m, String cos)
     {
         String tmp = "cos";

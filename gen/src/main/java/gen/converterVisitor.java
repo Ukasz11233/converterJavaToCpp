@@ -1,4 +1,4 @@
-// Generated from /home/ukasz/IdeaProjects/javaToCpp/converter.g4 by ANTLR 4.12.0
+package gen;// Generated from /home/ukasz/IdeaProjects/javaToCpp/converter.g4 by ANTLR 4.12.0
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
 /**
