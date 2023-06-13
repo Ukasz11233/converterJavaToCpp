@@ -33,7 +33,7 @@ forInit : localVariableDeclarationStatement | expressionList;
 
 localVariableDeclarationStatement : type variableDeclarators ';';
 variableDeclarators : variableDeclarator (',' variableDeclarator)*;
-variableDeclarator : Identifier arrayType? ('=' expression | arrayInitializer)?;
+variableDeclarator : Identifier arrayType? ('=' expression | '=' arrayInitializer)?;
 expressionStatement
     : expression ';'
     ;
